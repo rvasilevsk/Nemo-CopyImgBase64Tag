@@ -1,18 +1,23 @@
 import base64
-from dataclasses import asdict, dataclass
-from html import escape
-import io
+import json
 import os
-from pathlib import Path
 import sys
 import tkinter as tk
-import json
+from dataclasses import asdict, dataclass
+from html import escape
+from io import BytesIO, StringIO
+from pathlib import Path
+
 import pyperclip
 
 # TODO:
-# ~
-# chunked base64
+# ~ $HOME
 # mime by file content
+# skip unsupported mimes
+# chunked base64
+# ru
+# kb, mb
+# alt format
 
 CHUNK_SIZE = 120
 MAX_FILE_SIZE = 10_000_000
@@ -162,7 +167,7 @@ def mime_by_path(path: Path) -> bytes:
 class ImgTag:
     def __init__(self, filepath, conf):
         self.filepath = Path(filepath)
-        self.out = io.BytesIO()
+        self.out = BytesIO()
         self.conf = conf
 
     def __repr__(self):
@@ -215,15 +220,15 @@ class ImgTag:
         else:
             self.out.write(b)
 
-    def _b64_chunked(self):
-        sz = 80
-        with open(self.filepath, "rb") as f:
-            b = f.read(sz)
-            while b:
-                self.out.write("\n")
-                b = base64.b64encode(b)
-                self.out.write(b)
-                b = f.read(sz)
+    # def _b64_chunked(self):
+    #     sz = 80
+    #     with open(self.filepath, "rb") as f:
+    #         b = f.read(sz)
+    #         while b:
+    #             self.out.write("\n")
+    #             b = base64.b64encode(b)
+    #             self.out.write(b)
+    #             b = f.read(sz)
 
     def mime_b64(self):
         mime = self.mime_by_path()
@@ -298,13 +303,13 @@ class ImgTagMulty:
         return "\n".join(self.res_lines_gen())
 
     def val_bytes(self):
-        out = io.BytesIO()
+        out = BytesIO()
         for t in self.tags:
             out.write(t.val_bytes())
         return out.getvalue()
 
     def val_str(self):
-        out = io.StringIO()
+        out = StringIO()
         for t in self.tags:
             out.write(t.val_str())
         return out.getvalue()
@@ -322,7 +327,7 @@ def main(files):
         return
 
     cfg = read_conf()
-    print(asdict(cfg))
+    # print(asdict(cfg))
     t = ImgTagMulty(files, cfg)
     t.run()
     t.copy()
