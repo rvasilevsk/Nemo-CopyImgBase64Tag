@@ -1,0 +1,9 @@
+#!/bin/bash
+
+fullPaths=()
+curDir=$(pwd)
+for i; do
+    fullPaths+=("$curDir/$i")
+done
+
+python3 $HOME/.local/share/nemo/scripts/CopyImgBase64Tag.py "${fullPaths[@]}"
