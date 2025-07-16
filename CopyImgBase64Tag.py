@@ -130,6 +130,15 @@ def displayMgs(title, msg):
 ##############################################################################
 # file stuff
 ##############################################################################
+def unexpand_user(path: str | Path) -> str | Path:
+    s = str(path)
+    home = os.path.expanduser('~')
+    if not s.startswith(home):
+        return path
+    s = s.replace(home, '~', 1)
+    return Path(s) if isinstance(path, Path) else s
+
+
 class FileTooLargeError(OSError):
     def __init__(self, strerror, filename, filesize, maxsize):
         super().__init__(-1, strerror, filename)
@@ -137,7 +146,8 @@ class FileTooLargeError(OSError):
         self.maxsize = maxsize
 
 
-def open_max_size(file, mode, max_size, **kwargs):
+def open_max_size(file: Path, mode, max_size, **kwargs):
+    file = file.expanduser()
     sz = os.stat(file).st_size
     if sz > max_size:
         s = f"file size ({sz}) greate than max_file_size ({max_size})"
@@ -294,7 +304,7 @@ class ImgTagMulty:
         n = self.nerrs()
         if n:
             yield f"Errors ({n}):"
-            yield from (f"{e.filename}: {e.strerror}" for e in self.errs)
+            yield from (f"{unexpand_user(e.filename)}: {e.strerror}" for e in self.errs)
 
     def res_lines(self):
         return list(self.res_lines_gen())
@@ -337,13 +347,13 @@ def main(files):
 
 if __name__ == "__main__":
     files = sys.argv[1:]
-    # files = [
-    #     "/home/beh/Pictures/antarktida_small_.jpg",
-    #     "/home/beh/Pictures/antarktida_small.jpg",
-    #     "/home/beh/Pictures/antarktida_small.tga",
-    #     "/home/beh/Pictures/antarktida_small.webp",
-    #     "/home/beh/Pictures/grunt.gif",
-    #     "/home/beh/Pictures/simplenote.png",
-    #     "/home/beh/Pictures/photos1.iso",
-    # ]
+    files = [
+        "~/Pictures/dos_not_exists.jpg",
+        "~/Pictures/antarktida_small.jpg",
+        "~/Pictures/antarktida_small.tga",
+        "~/Pictures/antarktida_small.webp",
+        "~/Pictures/grunt.gif",
+        "~/Pictures/simplenote.png",
+        "~/Pictures/photos1.iso",
+    ]
     main(files)
